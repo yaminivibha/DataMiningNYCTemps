@@ -4,6 +4,7 @@ AssociationRulesExtractor.py
 import pandas as pd
 from itertools import chain, combinations
 from typing import List, Tuple
+from pprint import pprint
 
 
 class AssociationRulesExtractor:
@@ -34,10 +35,10 @@ class AssociationRulesExtractor:
         self.dataset = "INTEGRATED-DATASET.csv"
         self.df = pd.read_csv(self.dataset)
         self.min_support_occurrences = self.min_sup * len(self.df)
-        self.freq_itemsets = {} 
+        self.freq_itemsets = {}
         self.high_conf_rules = []
-        self.singletons = None
-    
+        self.singletons = []
+
     # def data_from_file(self, fname: str) -> frozenset:
     #     """
     #     Function which reads from the file and yields a generator
@@ -52,7 +53,7 @@ class AssociationRulesExtractor:
     #             line = line.strip().rstrip(",")  # Remove trailing comma
     #             record = frozenset(line.split(","))
     #             yield record
-    
+
     def compute_frequent_itemsets(self):
         """
         Compute frequent itemsets from the dataset.
@@ -61,10 +62,10 @@ class AssociationRulesExtractor:
         :return:
             None
         """
-        for k in range(len(self.df.columns)):
+        for k in range(1, len(self.df.columns) + 1):
             self.compute_k_frequent_itemset(k)
         return
-    
+
     def compute_k_frequent_itemset(self, k: int):
         """
         Compute frequent itemsets of size k.
@@ -73,7 +74,7 @@ class AssociationRulesExtractor:
         :return:
             - None
         """
-        if k==1:
+        if k == 1:
             # For each column, count the number of occurences of each value
             for col in self.df.columns:
                 # Using value_counts, get the frequency of each item by column
@@ -83,24 +84,25 @@ class AssociationRulesExtractor:
                     if key in self.freq_itemsets:
                         self.freq_itemsets[key] += value
                     else:
-                        self.freq_itemsets[key] = value
+                        self.freq_itemsets[(key,)] = value
+                        self.singletons.append(key)
+
             print(f"Extracted {len(self.freq_itemsets)} items...")
             self.prune_itemsets()
-            self.singletons = list(self.freq_itemsets.keys())
-        
         else:
             self.apriori_gen(k)
             # Check each row for the presence of candidate itemsets of size k
-            for record in self.df.iterrows():
+            print("Checking types of subsets!")
+            for _i, record in self.df.iterrows():
                 subsets = combinations(record, k)
                 for subset in subsets:
+                    if _i <= 5:
+                        print(subset)
                     if subset in self.freq_itemsets:
                         self.freq_itemsets[subset] += 1
             self.prune_itemsets()
-            print(f"Extracted {len(self.freq_itemsets)} items...")
-        
         return
-    
+
     def prune_itemsets(self,):
         """
         Prune infrequent itemsets inplace.
@@ -116,9 +118,11 @@ class AssociationRulesExtractor:
         for key in keys_to_delete:
             del self.freq_itemsets[key]
         print(f"Pruned candidate itemsets... Now {len(self.freq_itemsets)} items...")
-        print(self.freq_itemsets)
+        print("Frequent Itemsets:")
+        pprint(self.freq_itemsets)
+        print("========================================")
         return
-    
+
     def apriori_gen(self, k) -> None:
         """
         Generates viable candidate itemsets of size k from frequent itemsets of size k-1.
@@ -130,25 +134,26 @@ class AssociationRulesExtractor:
         """
         viable_candidates = []
         k_tuples = combinations(self.singletons, k)
-        
+
         # Check if all k-1 size subsets of items within k are in self.freq_items
         # Because a large subset is only frequent if all subsets are frequent
         total_candidates = 0
         for candidate in k_tuples:
             total_candidates += 1
-            subsets = combinations(candidate, k-1)
+            subsets = combinations(candidate, k - 1)
             for subset in subsets:
+                print(subset)
                 if subset not in self.freq_itemsets:
                     continue
                 viable_candidates.append(candidate)
         print(f"Total {total_candidates} candidate itemsets of size {k}...")
         print(f"{len(viable_candidates)} viable candidate itemsets of size {k}...")
-        
-        # Initializing frequency of viable candidates to 0 
+
+        # Initializing frequency of viable candidates to 0
         for itemset in viable_candidates:
-            self.freq_itemsets[itemset] = 0 
+            self.freq_itemsets[itemset] = 0
         return
-        
+
     def extract_association_rules(self):
         pass
 
@@ -165,7 +170,7 @@ class AssociationRulesExtractor:
         print(f"Minimum confidence      : {self.min_conf}")
         print(f"========================================")
         return
-    
+
     def print_results(self):
         print(f"\n==Frequent itemsets (min_sup={self.min_sup})")
         # TODO: loop through self.freq_itemsets and print each itemset along
