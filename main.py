@@ -25,14 +25,11 @@ def main():
     
     args = parser.parse_args()
     extractor = AssociationRulesExtractor(args)
-    extractor.printQueryParams()
-    print(f"\nComputing frequent itemsets from {extractor.dataset} dataset...")
-    extractor.computeFrequentItemsets()
-    
-    print(f"\nExtracting association rules from {extractor.dataset} dataset...")
-    extractor.extractAssociationRules()
-    
-    extractor.printResults()
+    extractor.print_query_params()
+    # print(f"\nComputing frequent itemsets from {extractor.dataset} dataset...")
+    # print(f"\nExtracting association rules from {extractor.dataset} dataset...")
+    extractor.run_apriori()
+    extractor.print_results()
     return
 
 if __name__ == "__main__":
