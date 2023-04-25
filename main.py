@@ -3,6 +3,7 @@ Main point of execution.
 """
 
 import argparse
+
 from AssociationRulesExtractor import AssociationRulesExtractor
 
 

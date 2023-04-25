@@ -1,12 +1,11 @@
 """
 AssociationRulesExtractor.py
 """
-import pandas as pd
 from itertools import combinations
-from typing import List
 from pprint import pprint
+
+import pandas as pd
 import prettytable as pt
-import os
 
 
 class AssociationRulesExtractor:
@@ -37,7 +36,7 @@ class AssociationRulesExtractor:
         self.dataset = "INTEGRATED-DATASET.csv"
         self.df = pd.read_csv(self.dataset)
         self.freq_itemsets = {}
-        self.high_conf_rules = []
+        self.high_conf_rules = {}
         self.singletons = set()
         self.data_in_sets = []
         self.put_data_in_sets()
@@ -168,8 +167,42 @@ class AssociationRulesExtractor:
         return len(removal)
 
     def extract_association_rules(self):
-        pass
+        """
+        Iterate over each frequent itemset
+            generate all k-1 subsets
+                for each subset: rule is (k-1 subset) -> (itemset - subset):
+                    check if rule meets minimum confidence threshold (if so, add to high_conf_rules)
+                else: prune rule
+        :params:
+            None
+        :return:
+            None
+        """
+        for itemset in self.freq_itemsets.keys():
+            if len(itemset) > 1:
+                subsets = combinations(itemset, len(itemset) - 1)
+                for subset in subsets:
+                    rule = (subset, tuple(set(itemset) - set(subset)))
+                    passes_threshold, confidence = self.check_confidence(rule)
+                    if passes_threshold:
+                        self.high_conf_rules[rule] = confidence
 
+    def check_confidence(self, rule: tuple) -> bool:
+        """
+        Check if a rule meets the minimum confidence threshold.
+        :params:
+            - rule (tuple): rule to check
+        :return:
+            - bool: True if rule meets minimum confidence threshold, False otherwise
+        """
+        itemset = rule[0]
+        subset = rule[1]
+        confidence = self.freq_itemsets[itemset] / self.freq_itemsets[subset]
+        if confidence >= self.min_conf:
+            return True, confidence
+        else:
+            return False, confidence
+        
     def print_query_params(self):
         """
         Print the query parameters.
@@ -214,13 +247,12 @@ class AssociationRulesExtractor:
             None
         """
         # Create table containing strong association rules and confidence values
-        # table = pt.PrettyTable()
-        # table.title = f"Strong Association Rules (min_conf={self.min_conf})"
-        # table.field_names = ["Rule", "Confidence"]
-        # for rule, conf in self.high_conf_rules.items():
-        #     table.add_row([rule, f"{ conf / len(self.df) :.4f}%"])
-        # print(table)
-        pass
+        table = pt.PrettyTable()
+        table.title = f"Strong Association Rules (min_conf={self.min_conf})"
+        table.field_names = ["Rule", "Confidence"]
+        for rule, conf in self.high_conf_rules.items():
+            table.add_row([f"{rule[0]} => {rule[1]}", f"{ conf * 100} %"])
+        print(table)
 
     def run_apriori(self):
         """
@@ -238,6 +270,6 @@ class AssociationRulesExtractor:
         self.compute_frequent_itemsets()
         self.print_itemsets()
 
-        print(f"\nExtracting association rules from dataset...")
+        print("\nExtracting association rules from dataset...")
         self.extract_association_rules()
         self.print_rules()
