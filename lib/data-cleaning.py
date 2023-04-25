@@ -10,17 +10,17 @@ pd.set_option("display.max_columns", 500)
 pd.set_option("display.width", 1000)
 
 # Load data into dataframes
-trees_url = "http://data.cityofnewyork.us/api/views/uvpi-gqnh/rows.csv?accessType=DOWNLOAD"
-temps_url = "http://data.cityofnewyork.us/api/views/qdq3-9eqn/rows.csv?accessType=DOWNLOAD"
+# trees_url = "http://data.cityofnewyork.us/api/views/uvpi-gqnh/rows.csv?accessType=DOWNLOAD"
+# temps_url = "http://data.cityofnewyork.us/api/views/qdq3-9eqn/rows.csv?accessType=DOWNLOAD"
 
-print(f"Downloading trees dataset...")
-wget.download(trees_url, '../data/trees.csv')
-print(f"Downloading temps dataset...")
-wget.download(temps_url, '../data/temps.csv')
+# print(f"Downloading trees dataset...")
+# wget.download(trees_url, '../data/trees.csv')
+# print(f"Downloading temps dataset...")
+# wget.download(temps_url, '../data/temps.csv')
 
 print(f"Reading datasets from csv...")
-trees = pd.read_csv("../data/trees.csv")
-temps = pd.read_csv("../data/temps.csv")
+trees = pd.read_csv("/Users/yamini/nyc-data-mining/data/2015_Street_Tree_Census_-_Tree_Data.csv")
+temps = pd.read_csv("/Users/yamini/nyc-data-mining/data/Hyperlocal_Temperature_Monitoring.csv")
 
 ###  Convert Datatypes for all columns in `temps` and `trees` to reduce memory usage and enable comparisons
 print(f"Cleaning datasets... ")
@@ -222,12 +222,12 @@ integrated.shape
 # We need to sample the data because the dataset is too large to read,
 # and running apriori on the entire dataset would require multiple
 # passes over the data, which would take too long.
-print(f"Sampling dataset down to 50k rows...")
-integrated = integrated.sample(n=50000, random_state=42)
+print(f"Sampling dataset down to 5k rows...")
+integrated = integrated.sample(n=5000, random_state=42)
 integrated.shape
 
 # Separate temperatures so 5% of the data is used for each bin.
-integrated["AirTempBinned"] = pd.qcut(integrated["AirTemp"], q=20)
+integrated["AirTempBinned"] = pd.qcut(integrated["AirTemp"], q=5)
 integrated["AirTempBinned"].value_counts()
 
 integrated["TreeDBHBinned"] = pd.qcut(integrated["tree_dbh"], q=5)
