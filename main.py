@@ -26,9 +26,7 @@ def main():
     extractor = AssociationRulesExtractor(args)
     extractor.print_query_params()
     extractor.run_apriori()
-    extractor.print_results()
     return
-
 
 if __name__ == "__main__":
     main()
