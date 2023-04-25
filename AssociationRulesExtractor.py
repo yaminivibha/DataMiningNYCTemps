@@ -202,7 +202,7 @@ class AssociationRulesExtractor:
             return True, confidence
         else:
             return False, confidence
-        
+
     def print_query_params(self):
         """
         Print the query parameters.

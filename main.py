@@ -14,9 +14,7 @@ def main():
         description="Association Rule Extraction from NYC OpenData datasets"
     )
     parser.add_argument(
-        "min_sup",
-        type=float,
-        help="Minimum support threshold for association rules",
+        "min_sup", type=float, help="Minimum support threshold for association rules",
     )
     parser.add_argument(
         "min_conf",
