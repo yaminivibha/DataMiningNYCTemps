@@ -6,7 +6,8 @@ from itertools import combinations
 from typing import List
 from pprint import pprint
 import prettytable as pt
-import os 
+import os
+
 
 class AssociationRulesExtractor:
     """
@@ -40,13 +41,13 @@ class AssociationRulesExtractor:
         self.singletons = set()
         self.data_in_sets = []
         self.put_data_in_sets()
-    
+
     def put_data_in_sets(self):
         for i in range(len(self.df)):
             self.data_in_sets.append(set(self.df.iloc[i].dropna().values))
         return
 
-    def compute_frequent_itemsets(self, verbose = False):
+    def compute_frequent_itemsets(self, verbose=False):
         """
         Compute frequent itemsets from the dataset.
         :params:
@@ -79,12 +80,14 @@ class AssociationRulesExtractor:
                 print("========================================")
             return
         else:
-            if verbose: print("========================================\nk = {k}")
+            if verbose:
+                print("========================================\nk = {k}")
             self.generate_candidate_itemsets(k)
-            removed =  self.prune_itemsets(k)
-            if verbose: print("========================================")
+            removed = self.prune_itemsets(k)
+            if verbose:
+                print("========================================")
             return removed
-    
+
     def generate_candidate_itemsets(self, k: int, verbose: bool = False):
         """
         Function which generates candidate itemsets of size k.
@@ -101,11 +104,14 @@ class AssociationRulesExtractor:
                 if subset not in self.freq_itemsets:
                     add = False
                     break
-            if add: 
+            if add:
                 self.freq_itemsets[comb] = 0
-        if verbose: print(f"Now we have {len(self.freq_itemsets)} potential / candidate itemsets of size {k}")
+        if verbose:
+            print(
+                f"Now we have {len(self.freq_itemsets)} potential / candidate itemsets of size {k}"
+            )
         return combs
-    
+
     def compute_singleton_frequent_itemset(self):
         """
         Compute frequent itemsets of size 1.
@@ -129,13 +135,13 @@ class AssociationRulesExtractor:
                 self.singletons.add(itemset[0])
             else:
                 removal.append(itemset)
-        
+
         # Remove items that do not meet the minimum support threshold
         for item in removal:
             del self.freq_itemsets[item]
         return
-    
-    def prune_itemsets(self, k : int, verbose: bool = False) -> int:
+
+    def prune_itemsets(self, k: int, verbose: bool = False) -> int:
         """
         Remove itemsets that do not meet the minimum support threshold.
         :params:
@@ -145,19 +151,22 @@ class AssociationRulesExtractor:
         """
         for row in self.data_in_sets:
             for key in self.freq_itemsets.keys():
-                    if len(key) == k:
-                        key_set = set(key)
-                        if key_set.issubset(row):
-                            self.freq_itemsets[key] += 1
+                if len(key) == k:
+                    key_set = set(key)
+                    if key_set.issubset(row):
+                        self.freq_itemsets[key] += 1
         removal = []
         for itemset, count in self.freq_itemsets.items():
             if count < self.min_sup * len(self.df):
                 removal.append(itemset)
         for item in removal:
             del self.freq_itemsets[item]
-        if verbose: print(f"Removed {len(removal)} itemsets of size {k} that did not meet the minimum support threshold")
+        if verbose:
+            print(
+                f"Removed {len(removal)} itemsets of size {k} that did not meet the minimum support threshold"
+            )
         return len(removal)
-    
+
     def extract_association_rules(self):
         pass
 
@@ -187,17 +196,16 @@ class AssociationRulesExtractor:
         table = pt.PrettyTable()
         table.title = f"Frequent itemsets (min_sup={self.min_sup})"
         table.field_names = ["Itemset", "Support %"]
-        table.float_format = '0.4'
+        table.float_format = "0.4"
         for itemset, count in self.freq_itemsets.items():
             # itemset_output = ", ".join(itemset)
-            table.add_row([itemset, f"{count / len(self.df) * 100} %"])       
+            table.add_row([itemset, f"{count / len(self.df) * 100} %"])
         # TODO: sort table by support (descending)
         print(table)
         print("Total number of frequent itemsets: ", len(self.freq_itemsets))
-        print ("========================================")
-        
-        
-    def print_rules(self):    
+        print("========================================")
+
+    def print_rules(self):
         """
         Create a table containing strong association rules and confidence values.
         :params:
@@ -210,7 +218,7 @@ class AssociationRulesExtractor:
         # table.title = f"Strong Association Rules (min_conf={self.min_conf})"
         # table.field_names = ["Rule", "Confidence"]
         # for rule, conf in self.high_conf_rules.items():
-        #     table.add_row([rule, f"{ conf / len(self.df) :.4f}%"])        
+        #     table.add_row([rule, f"{ conf / len(self.df) :.4f}%"])
         # print(table)
         pass
 
@@ -229,7 +237,7 @@ class AssociationRulesExtractor:
         print("\nComputing frequent itemsets from dataset...")
         self.compute_frequent_itemsets()
         self.print_itemsets()
-        
+
         print(f"\nExtracting association rules from dataset...")
         self.extract_association_rules()
         self.print_rules()
