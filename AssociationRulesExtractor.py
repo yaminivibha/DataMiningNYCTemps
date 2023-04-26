@@ -240,10 +240,6 @@ class AssociationRulesExtractor:
         print("Total number of frequent itemsets: ", len(self.freq_itemsets))
         print("========================================")
         return
-    
-    # Define a function to extract confidence as a float
-    def get_confidence(row):
-        return float(row[1].replace("%", ""))
 
     def print_rules(self):
         """
@@ -266,6 +262,7 @@ class AssociationRulesExtractor:
         print("========================================")
 
     def run_apriori(self):
+        
         """
         Wrapper function for apriori algorithm.
         :params:
