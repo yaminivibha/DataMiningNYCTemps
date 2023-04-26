@@ -3,6 +3,7 @@ AssociationRulesExtractor.py
 """
 from itertools import combinations
 from pprint import pprint
+from typing import Tuple
 
 import pandas as pd
 import prettytable as pt
@@ -183,11 +184,11 @@ class AssociationRulesExtractor:
                 subsets = combinations(itemset, len(itemset) - 1)
                 for subset in subsets:
                     rule = (subset, tuple(set(itemset) - set(subset)))
-                    passes_threshold, confidence = self.check_confidence(rule)
+                    passes_threshold, confidence = self.check_confidence(rule, itemset)
                     if passes_threshold:
                         self.high_conf_rules[rule] = confidence
 
-    def check_confidence(self, rule: tuple) -> bool:
+    def check_confidence(self, rule: tuple, itemset: tuple) -> Tuple[bool, float]:
         """
         Check if a rule meets the minimum confidence threshold.
         :params:
@@ -195,9 +196,10 @@ class AssociationRulesExtractor:
         :return:
             - bool: True if rule meets minimum confidence threshold, False otherwise
         """
-        itemset = rule[0]
-        subset = rule[1]
-        confidence = self.freq_itemsets[itemset] / self.freq_itemsets[subset]
+        LHS = rule[0]
+        RHS = rule[1]
+        
+        confidence = self.freq_itemsets[itemset]  / self.freq_itemsets[LHS]
         if confidence >= self.min_conf:
             return True, confidence
         else:
