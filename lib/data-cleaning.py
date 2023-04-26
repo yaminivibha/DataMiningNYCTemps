@@ -9,8 +9,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 print('Loading data...')
 # Load data into dataframes
-trees = pd.read_csv('./data/2015_Street_Tree_Census_-_Tree_Data.csv')
-temps = pd.read_csv('./data/Hyperlocal_Temperature_Monitoring.csv')
+trees = pd.read_csv('./data/trees.csv')
+temps = pd.read_csv('./data/temps.csv')
 
 dtypes = {
 	'Sensor.ID': str,
