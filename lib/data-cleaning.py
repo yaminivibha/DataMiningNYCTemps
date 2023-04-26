@@ -1,14 +1,16 @@
 
 import pandas as pd
 import dask.dataframe as dd
+import warnings
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
+print('Loading data...')
 # Load data into dataframes
-trees = pd.read_csv('../data/2015_Street_Tree_Census_-_Tree_Data.csv')
-temps = pd.read_csv('../data/Hyperlocal_Temperature_Monitoring.csv')
+trees = pd.read_csv('./data/trees.csv')
+temps = pd.read_csv('./data/temps.csv')
 
 dtypes = {
 	'Sensor.ID': str,
@@ -99,7 +101,6 @@ cols_to_drop = [
 ]
 
 [trees.drop(columns=col, inplace=True) for col in cols_to_drop if col in trees.columns]
-trees.head()
 
 # Sampling the temp data
 # Keeping only hour 0, 6, 12, 18 for each day for each location
@@ -119,7 +120,6 @@ daily_avg_temps = temps.groupby(['Sensor.ID', 'Day']).agg(aggregation_functions)
 # Dropping columns that are not relevant to the analysis.
 cols_to_drop = ['Year']
 [daily_avg_temps.drop(columns=col, inplace=True) for col in cols_to_drop if col in trees.columns]
-daily_avg_temps.head()
 
 # Rename column to match trees dataset for joining.
 if 'ntacode' in daily_avg_temps.columns:
@@ -136,8 +136,6 @@ trees_nta_filtered.drop(columns=['stump_diam'], inplace=True)
 
 # Randomly sample trees so there are 91696 -> 50000 rows.
 trees_nta_filtered = trees_nta_filtered.sample(n=50000, random_state=42)
-
-trees_nta_filtered.head()
 
 cols_to_drop = [
 	'root_stone',
@@ -162,6 +160,8 @@ trees_nta_filtered.set_index('nta', inplace=True)
 # Further filter temps to only include every third day.
 daily_avg_temps_filtered = daily_avg_temps[daily_avg_temps['Day'].dt.day % 7 == 0]
 
+
+print("Merging dataframes...")
 # Use dask to merge the dataframes in parallel.
 dd_daily_avg_temps = dd.from_pandas(daily_avg_temps_filtered, npartitions=3)
 dd_trees_nta_filtered = dd.from_pandas(trees_nta_filtered, npartitions=3)
@@ -182,9 +182,10 @@ cols_to_drop = [
 
 integrated.drop(columns=cols_to_drop, inplace=True)
 
+print("Cleaning outputs + renaming columns...")
 # Sample integrated dataset from 20M rows to 5k rows.
 # We need to sample the data because the dataset is too large to read.
-integrated = integrated.sample(n=5000, random_state=42)
+integrated = integrated.sample(n=50000, random_state=42)
 
 # Separate temperatures so 5% of the data is used for each bin.
 integrated['AirTempBinned'] = pd.qcut(integrated['AirTemp'], q=5)
@@ -226,4 +227,5 @@ integrated['user_type'] = integrated['user_type'].str.replace('TreesCount Staff'
 integrated['user_type'] = integrated['user_type'].str.replace('Volunteer','Surveyor Type: Volunteer')
 integrated['user_type'] = integrated['user_type'].str.replace('NYC Parks Staff','Surveyor Type: NYC Parks Staff')
 
-integrated.to_csv('../INTEGRATED-DATASET.csv')
+print("Writing to csv...")
+integrated.to_csv('INTEGRATED-DATASET.csv')

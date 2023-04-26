@@ -3,6 +3,7 @@ AssociationRulesExtractor.py
 """
 from itertools import combinations
 from pprint import pprint
+from typing import Tuple
 
 import pandas as pd
 import prettytable as pt
@@ -183,11 +184,11 @@ class AssociationRulesExtractor:
                 subsets = combinations(itemset, len(itemset) - 1)
                 for subset in subsets:
                     rule = (subset, tuple(set(itemset) - set(subset)))
-                    passes_threshold, confidence = self.check_confidence(rule)
+                    passes_threshold, confidence = self.check_confidence(rule, itemset)
                     if passes_threshold:
                         self.high_conf_rules[rule] = confidence
 
-    def check_confidence(self, rule: tuple) -> bool:
+    def check_confidence(self, rule: tuple, itemset: tuple) -> Tuple[bool, float]:
         """
         Check if a rule meets the minimum confidence threshold.
         :params:
@@ -195,9 +196,10 @@ class AssociationRulesExtractor:
         :return:
             - bool: True if rule meets minimum confidence threshold, False otherwise
         """
-        itemset = rule[0]
-        subset = rule[1]
-        confidence = self.freq_itemsets[itemset] / self.freq_itemsets[subset]
+        LHS = rule[0]
+        RHS = rule[1]
+        
+        confidence = self.freq_itemsets[itemset]  / self.freq_itemsets[LHS]
         if confidence >= self.min_conf:
             return True, confidence
         else:
@@ -240,10 +242,6 @@ class AssociationRulesExtractor:
         print("Total number of frequent itemsets: ", len(self.freq_itemsets))
         print("========================================")
         return
-    
-    # Define a function to extract confidence as a float
-    def get_confidence(row):
-        return float(row[1].replace("%", ""))
 
     def print_rules(self):
         """
@@ -262,9 +260,11 @@ class AssociationRulesExtractor:
             
         # Sort table by confidence (descending).
         print(table.get_string(sortby='Confidence %', sort_key=lambda x: float(x[0].strip('%')), reversesort=True))
-
+        print("Total number of strong association rules: ", len(self.high_conf_rules))
+        print("========================================")
 
     def run_apriori(self):
+        
         """
         Wrapper function for apriori algorithm.
         :params:
