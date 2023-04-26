@@ -229,14 +229,21 @@ class AssociationRulesExtractor:
         table = pt.PrettyTable()
         table.title = f"Frequent itemsets (min_sup={self.min_sup})"
         table.field_names = ["Itemset", "Support %"]
-        table.float_format = "0.4"
         for itemset, count in self.freq_itemsets.items():
-            # itemset_output = ", ".join(itemset)
-            table.add_row([itemset, f"{count / len(self.df) * 100} %"])
-        # TODO: sort table by support (descending)
-        print(table)
+            itemset_str = ", ".join(str(x) for x in itemset)
+            support_str = f"{count / len(self.df) * 100 :.4f} %"
+            table.add_row([itemset_str, support_str])
+
+        # Sort table by support (descending).
+        print(table.get_string(sortby='Support %', sort_key=lambda x: float(x[0].strip('%')), reversesort=True))
+        
         print("Total number of frequent itemsets: ", len(self.freq_itemsets))
         print("========================================")
+        return
+    
+    # Define a function to extract confidence as a float
+    def get_confidence(row):
+        return float(row[1].replace("%", ""))
 
     def print_rules(self):
         """
@@ -249,10 +256,13 @@ class AssociationRulesExtractor:
         # Create table containing strong association rules and confidence values
         table = pt.PrettyTable()
         table.title = f"Strong Association Rules (min_conf={self.min_conf})"
-        table.field_names = ["Rule", "Confidence"]
+        table.field_names = ["Rule", "Confidence %"]
         for rule, conf in self.high_conf_rules.items():
-            table.add_row([f"{rule[0]} => {rule[1]}", f"{ conf * 100} %"])
-        print(table)
+            table.add_row([f"{rule[0]} => {rule[1]}", f"{ conf * 100 :.4f} %"])
+            
+        # Sort table by confidence (descending).
+        print(table.get_string(sortby='Confidence %', sort_key=lambda x: float(x[0].strip('%')), reversesort=True))
+
 
     def run_apriori(self):
         """
