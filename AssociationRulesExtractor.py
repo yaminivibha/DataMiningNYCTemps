@@ -262,7 +262,8 @@ class AssociationRulesExtractor:
             
         # Sort table by confidence (descending).
         print(table.get_string(sortby='Confidence %', sort_key=lambda x: float(x[0].strip('%')), reversesort=True))
-
+        print("Total number of strong association rules: ", len(self.high_conf_rules))
+        print("========================================")
 
     def run_apriori(self):
         """

@@ -185,7 +185,7 @@ integrated.drop(columns=cols_to_drop, inplace=True)
 print("Cleaning outputs + renaming columns...")
 # Sample integrated dataset from 20M rows to 5k rows.
 # We need to sample the data because the dataset is too large to read.
-integrated = integrated.sample(n=5000, random_state=42)
+integrated = integrated.sample(n=50000, random_state=42)
 
 # Separate temperatures so 5% of the data is used for each bin.
 integrated['AirTempBinned'] = pd.qcut(integrated['AirTemp'], q=5)
@@ -228,4 +228,4 @@ integrated['user_type'] = integrated['user_type'].str.replace('Volunteer','Surve
 integrated['user_type'] = integrated['user_type'].str.replace('NYC Parks Staff','Surveyor Type: NYC Parks Staff')
 
 print("Writing to csv...")
-integrated.to_csv('../INTEGRATED-DATASET.csv')
+integrated.to_csv('INTEGRATED-DATASET.csv')
