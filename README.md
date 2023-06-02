@@ -18,7 +18,7 @@ This project was completed as part of the Spring 2023 version of Columbia Univer
 │   └── AssociationRulesExtractor.py
 ├── INTEGRATED-DATASET.csv
 ├── example-run.txt
-├── README.pdf <-- You're here now!
+├── README.md <-- You're here now!
 └── setup.sh
 ```
 
